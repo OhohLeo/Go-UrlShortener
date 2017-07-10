@@ -1,0 +1,5 @@
+{
+  "port": "8888",
+  "fingerprint": "true",
+  "upstreams-option": "fail_timeout=5s"
+}

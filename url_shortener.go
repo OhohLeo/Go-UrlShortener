@@ -22,76 +22,23 @@ type UrlShortener struct {
 	urls map[string]string
 }
 
-var LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-var CHECK_ID = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
+// Init procède à l'initalisation du random, du stockage des urls & du routage
+func (u *UrlShortener) Init() http.Handler {
 
-// GetRandomKey retourne une clé aléatoire composé de 6 lettres
-func (u *UrlShortener) GetRandomKey() string {
+	// Initialisation du random
+	rand.Seed(time.Now().Unix())
 
-	result := make([]byte, KEY_LENGTH)
+	// Initialisation des urls
+	u.urls = make(map[string]string)
 
-	for i := range result {
-		result[i] = LETTERS[rand.Intn(len(LETTERS))]
-	}
+	// Initialisation du multiplexer
+	mux := http.NewServeMux()
 
-	return string(result)
-}
+	mux.HandleFunc("/encode", u.handleEncode)
+	mux.HandleFunc("/decode", u.handle(DECODE))
+	mux.HandleFunc("/redirect", u.handle(REDIRECT))
 
-// Encode permet d'obtenir l'url réduite
-func (u *UrlShortener) Encode(longUrl *url.URL) (shortUrl string) {
-
-	// Génération d'une clé aléatoire
-	for {
-		shortUrl = u.GetRandomKey()
-
-		// Vérification que la shortUrl n'est pas déjà utilisée
-		_, ok := u.urls[shortUrl]
-		if ok == false {
-			break
-		}
-	}
-
-	// Stockage de la relation url courte => url longue
-	u.urls[shortUrl] = longUrl.String()
-
-	return
-}
-
-// Decode permet d'obtenir l'url originale à partir de l'url réduite
-func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
-
-	var ok bool
-
-	key := shortUrl.Query().Get("id")
-
-	// Validation de l'id
-	if CHECK_ID.MatchString(key) == false {
-		err = fmt.Errorf("id '%s'", key)
-		return
-	}
-
-	// Récupération de l'adresse longue
-	longUrl, ok = u.urls[key]
-	if ok == false {
-		err = fmt.Errorf("id '%s' not found", key)
-		return
-	}
-
-	return
-}
-
-// onError est appelé en cas d'erreur et retourne une erreur de type HTTP BadRequest
-func (u *UrlShortener) onError(w http.ResponseWriter, status int, msg string, err error) {
-
-	if err != nil {
-		msg += " " + err.Error()
-	}
-
-	// Log du message d'erreur
-	log.Println(msg)
-
-	// Renvoie de l'erreur
-	http.Error(w, msg, status)
+	return mux
 }
 
 // handleEncode gère la génération d'une clé aléatoire associé à l'url passée en paramètre
@@ -156,29 +103,74 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 	}
 }
 
-// Init procède à l'initalisation du random, du stockage des urls & du routage
-func (u *UrlShortener) Init() http.Handler {
+// onError est appelé en cas d'erreur et retourne une erreur de type HTTP BadRequest
+func (u *UrlShortener) onError(w http.ResponseWriter, status int, msg string, err error) {
 
-	// Initialisation du random
-	rand.Seed(time.Now().Unix())
+	if err != nil {
+		msg += " " + err.Error()
+	}
 
-	// Initialisation des urls
-	u.urls = make(map[string]string)
+	// Log du message d'erreur
+	log.Println(msg)
 
-	// Initialisation du multiplexer
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/encode", u.handleEncode)
-	mux.HandleFunc("/decode", u.handle(DECODE))
-	mux.HandleFunc("/redirect", u.handle(REDIRECT))
-
-	log.Println("URL shortener starting ...")
-
-	return mux
+	// Renvoie de l'erreur
+	http.Error(w, msg, status)
 }
 
-func main() {
+// Encode permet d'obtenir l'url réduite
+func (u *UrlShortener) Encode(longUrl *url.URL) (shortUrl string) {
 
-	// Démarrage du serveur
-	log.Fatal(http.ListenAndServe(":8080", new(UrlShortener).Init()))
+	// Génération d'une clé aléatoire
+	for {
+		shortUrl = u.GetRandomKey()
+
+		// Vérification que la shortUrl n'est pas déjà utilisée
+		_, ok := u.urls[shortUrl]
+		if ok == false {
+			break
+		}
+	}
+
+	// Stockage de la relation url courte => url longue
+	u.urls[shortUrl] = longUrl.String()
+
+	return
+}
+
+// Decode permet d'obtenir l'url originale à partir de l'url réduite
+func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
+
+	var ok bool
+
+	key := shortUrl.Query().Get("id")
+
+	// Validation de l'id
+	if CHECK_ID.MatchString(key) == false {
+		err = fmt.Errorf("id '%s'", key)
+		return
+	}
+
+	// Récupération de l'adresse longue
+	longUrl, ok = u.urls[key]
+	if ok == false {
+		err = fmt.Errorf("id '%s' not found", key)
+		return
+	}
+
+	return
+}
+
+var LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+var CHECK_ID = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
+
+// GetRandomKey retourne une clé aléatoire composé de 6 lettres
+func (u *UrlShortener) GetRandomKey() string {
+
+	result := make([]byte, KEY_LENGTH)
+
+	for i := range result {
+		result[i] = LETTERS[rand.Intn(len(LETTERS))]
+	}
+
+	return string(result)
 }

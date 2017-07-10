@@ -1,0 +1,15 @@
+{
+  "services": [
+    {
+      "name": "url_shortener",
+      "silent": true,
+      "configurationFile": "url_shortener.json"
+    }
+  ],
+  "watchdog": {
+    "delay": "1s",
+    "unreachable_limit": 5
+  },
+  "plugins": [],
+  "port": 9000
+}

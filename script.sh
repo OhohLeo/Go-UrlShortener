@@ -4,7 +4,7 @@ dst=`dirname $0`
 
 # Suppression du dossier contenant les binaires s'il existe
 if [ -d "$dst/bin" ];then
-rm -r "$dst/bin";
+	rm -r "$dst/bin";
 fi
 
 # Création du dossier
