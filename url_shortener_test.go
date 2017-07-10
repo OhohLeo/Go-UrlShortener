@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -17,48 +18,71 @@ func TestUrlShortener(t *testing.T) {
 		t.Fail()
 	}
 
+	// Lancement du serveur
 	server := httptest.NewServer(new(UrlShortener).Init())
+	defer server.Close()
 
 	// Requêtes invalides
-	for _, route := range []string{"encode", "decode", "redirect"} {
-		urlError(t, http.StatusBadRequest,
-			server.URL+"/"+route, "",
-			"Invalid url parse : empty url\n")
-		urlError(t, http.StatusBadRequest,
-			server.URL+"/"+route, "www.test.bzh",
-			"Invalid url parse www.test.bzh: invalid URI for request\n")
-	}
+	urlError(t, http.StatusBadRequest,
+		server.URL+"/encode", "",
+		"Invalid url parse : empty url\n")
+	urlError(t, http.StatusBadRequest,
+		server.URL+"/encode", "www.test.bzh",
+		"Invalid url parse www.test.bzh: invalid URI for request\n")
 
 	// Encodage
-	shortUrl := urlOk(t, server.URL+"/encode",
-		"http://www.test.bzh", http.StatusCreated)
+	urlDst := urlOk(t, http.StatusCreated, server.URL+"/encode",
+		"http://www.test.bzh", false)
+	if urlDst == nil {
+		t.Fail()
+		return
+	}
+
+	// Récupération de l'identifiant
+	id := urlDst.Query().Get("id")
 
 	// Décodage
-	longUrl := urlOk(t, server.URL+"/decode",
-		shortUrl, http.StatusOK)
+	longUrl := urlOk(t, http.StatusOK, server.URL+"/decode?id="+id, "", false)
 
-	assert.Equal(t, "http://www.test.bzh", longUrl)
+	assert.Equal(t, "http://www.test.bzh", longUrl.String())
 
-	server.Close()
 }
 
-func urlOk(t *testing.T, url string, input string, status int) (location string) {
+func urlOk(t *testing.T, status int, dst string, data string, checkLocation bool) (redirect *url.URL) {
 
-	rsp, err := http.Post(url, "", strings.NewReader(input))
+	rsp, err := http.Post(dst, "", strings.NewReader(data))
 	if assert.Nil(t, err) == false {
 		return
 	}
 
 	assert.Equal(t, status, rsp.StatusCode)
 
-	location = rsp.Header.Get("Location")
-	assert.NotNil(t, location)
+	var urlStr string
+	if checkLocation {
+		urlStr = rsp.Header.Get("Location")
+	} else {
+		body, err := ioutil.ReadAll(rsp.Body)
+		if assert.Nil(t, err, "no error on getting body") == false {
+			t.Fail()
+			return
+		}
+
+		urlStr = string(body)
+	}
+
+	rcvUrl, err := url.ParseRequestURI(urlStr)
+	if assert.Nil(t, err) == false {
+		t.Fail()
+		return
+	}
+
+	redirect = rcvUrl
 	return
 }
 
-func urlError(t *testing.T, status int, url string, location string, error string) {
+func urlError(t *testing.T, status int, dst string, location string, error string) {
 
-	rsp, err := http.Post(url, "", strings.NewReader(location))
+	rsp, err := http.Post(dst, "", strings.NewReader(location))
 	if assert.Nil(t, err) == false {
 		return
 	}

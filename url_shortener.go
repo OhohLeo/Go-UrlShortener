@@ -7,12 +7,12 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"regexp"
 	"time"
 )
 
 const (
-	ENCODE = iota
-	DECODE
+	DECODE = iota
 	REDIRECT
 
 	KEY_LENGTH = 6
@@ -22,7 +22,8 @@ type UrlShortener struct {
 	urls map[string]string
 }
 
-var letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+var LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+var CHECK_ID = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
 
 // GetRandomKey retourne une clé aléatoire composé de 6 lettres
 func (u *UrlShortener) GetRandomKey() string {
@@ -30,7 +31,7 @@ func (u *UrlShortener) GetRandomKey() string {
 	result := make([]byte, KEY_LENGTH)
 
 	for i := range result {
-		result[i] = letters[rand.Intn(len(letters))]
+		result[i] = LETTERS[rand.Intn(len(LETTERS))]
 	}
 
 	return string(result)
@@ -61,17 +62,18 @@ func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
 
 	var ok bool
 
-	key := shortUrl.RequestURI()
+	key := shortUrl.Query().Get("id")
 
-	// Remove 1st '/'
-	if key[:1] == "/" {
-		key = key[1:]
+	// Validation de l'id
+	if CHECK_ID.MatchString(key) == false {
+		err = fmt.Errorf("id '%s'", key)
+		return
 	}
 
-	// Vérification de la présence de l'adresse courte
+	// Récupération de l'adresse longue
 	longUrl, ok = u.urls[key]
 	if ok == false {
-		err = fmt.Errorf("short url '%s' not found", shortUrl)
+		err = fmt.Errorf("id '%s' not found", key)
 		return
 	}
 
@@ -92,67 +94,68 @@ func (u *UrlShortener) onError(w http.ResponseWriter, status int, msg string, er
 	http.Error(w, msg, status)
 }
 
-// handle permet une gestion centralisée des requêtes de l'API
+// handleEncode gère la génération d'une clé aléatoire associé à l'url passée en paramètre
+func (u *UrlShortener) handleEncode(w http.ResponseWriter, r *http.Request) {
+
+	// Vérification de la présence du body
+	if r.Body == nil {
+		u.onError(w, http.StatusBadRequest, "No body found", nil)
+		return
+	}
+
+	// Récupération vers l'url spécifiée dans le body
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		u.onError(w, http.StatusBadRequest, "Invalid body", err)
+		return
+	}
+
+	// Validation de l'url
+	rcvUrl, err := url.ParseRequestURI(string(body))
+	if err != nil {
+		u.onError(w, http.StatusBadRequest, "Invalid url", err)
+		return
+	}
+
+	// Génération de l'url
+	dst := "http"
+	if r.TLS != nil {
+		dst += "s"
+	}
+	dst += "://" + r.Host + "/redirect?id=" + u.Encode(rcvUrl)
+
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(dst))
+}
+
+// handle gère les requêtes de type decode & redirect
 func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		// Vérification de la présence du body
-		if r.Body == nil {
-			u.onError(w, http.StatusBadRequest, "No body found", nil)
-			return
-		}
-
-		// Récupération vers l'url spécifiée dans le body
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			u.onError(w, http.StatusBadRequest, "Invalid body", err)
-			return
-		}
-
-		// Validation de l'url
-		rcvUrl, err := url.ParseRequestURI(string(body))
-		if err != nil {
-			u.onError(w, http.StatusBadRequest, "Invalid url", err)
-			return
-		}
-
 		var status int
-		var dst string
 
-		// Gestion du type de requête
-		switch requestType {
-		case ENCODE:
-			status = http.StatusCreated
-
-			// Génération de l'url
-			dst = "http"
-			if r.TLS != nil {
-				dst += "s"
-			}
-
-			dst += "://" + r.Host + "/" + u.Encode(rcvUrl)
-		case DECODE:
-			status = http.StatusOK
-			dst, err = u.Decode(rcvUrl)
-		case REDIRECT:
-			status = http.StatusSeeOther
-			dst, err = u.Decode(rcvUrl)
-		}
-
-		// Gestion des cas d'erreurs
+		dst, err := u.Decode(r.URL)
 		if err != nil {
 			u.onError(w, http.StatusNotFound, "Invalid", err)
 			return
 		}
 
-		w.Header().Set("Location", dst)
+		// Gestion du type de requête
+		switch requestType {
+		case DECODE:
+			status = http.StatusOK
+		case REDIRECT:
+			status = http.StatusSeeOther
+			w.Header().Set("Location", dst)
+		}
+
 		w.WriteHeader(status)
 		w.Write([]byte(dst))
 	}
 }
 
-// routes initialise les routes
+// Init procède à l'initalisation du random, du stockage des urls & du routage
 func (u *UrlShortener) Init() http.Handler {
 
 	// Initialisation du random
@@ -164,7 +167,7 @@ func (u *UrlShortener) Init() http.Handler {
 	// Initialisation du multiplexer
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/encode", u.handle(ENCODE))
+	mux.HandleFunc("/encode", u.handleEncode)
 	mux.HandleFunc("/decode", u.handle(DECODE))
 	mux.HandleFunc("/redirect", u.handle(REDIRECT))
 

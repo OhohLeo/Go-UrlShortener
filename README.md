@@ -29,7 +29,6 @@ curl -i http://localhost:8080/encode --data "https://www.quai-des-apps.com"
 
 ```http
 HTTP/1.1 201 Created
-Location: http://localhost:8080/0L3VWH
 Date: Mon, 10 Jul 2017 09:31:05 GMT
 Content-Length: 28
 Content-Type: text/plain; charset=utf-8
@@ -39,12 +38,11 @@ http://localhost:8080/0L3VWH
 
 Décodage POST /decode
 ```bash
-curl -i http://localhost:8080/decode --data "http://localhost:8080/0L3VWH"
+curl -i http://localhost:8080/decode?id=0L3VWH"
 ```
 
 ```http
 HTTP/1.1 200 OK
-Location: https://www.quai-des-apps.com
 Date: Mon, 10 Jul 2017 09:37:46 GMT
 Content-Length: 18
 Content-Type: text/plain; charset=utf-8
@@ -54,7 +52,7 @@ https://www.quai-des-apps.com
 
 Redirection POST /redirect
 ```bash
-curl -i http://localhost:8080/redirect --data "http://localhost:8080/0L3VWH"
+curl -i http://localhost:8080/redirect?id=0L3VWH"
 ```
 
 ```http
@@ -73,7 +71,7 @@ Limites de la conception actuelle :
    caractères avec 62 possibilités chacunes (/a-zA-Z0-9/) soit 56 800
    235 584 possibilités (62^6)
 
-Idées d'améliorations :
- - Stockage des données dans une base
- - Fichier de configuration pour spécifier le domaine + port d'écoute
+Piste d'améliorations :
+ - Stockage des données en base
+ - Fichier de configuration pour spécifier le domaine + port d'écoute + longueur des clés
  - Timestamp associé à chaque url pour définir un délai de péremption (afin de nettoyer les tables)
