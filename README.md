@@ -1,24 +1,26 @@
 # Go-UrlShortener
 
 Implémentation en Go d'une API Rest permettant la gestion d'un URL shortener.
+
 Temps d'implémentation : ~4h
 
-# Installation
+## Installation
 ```bash
 glide up
 ```
-# Génération des binaires pour 386, amd64 & armhfv7
+## Génération des binaires pour 386, amd64 & armhfv7
 ```bash
 chmod +x script.sh
 ./script.sh
+ls bin
 ```
 
-# Lancement du programme
+## Lancement du programme
 ```bash
 go run url_shortener.go
 ```
 
-# Exemples d'utilisation
+## Exemples d'utilisation
 
 Encodage POST /encode
 ```bash
@@ -64,6 +66,7 @@ Content-Type: text/plain; charset=utf-8
 
 https://www.quai-des-apps.com
 ```
+## Commentaires
 
 Limites de la conception actuelle :
  - Génération d'une url courte à partir d'une clé composée de 6
