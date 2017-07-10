@@ -29,22 +29,22 @@ curl -i http://localhost:8080/encode --data "https://www.quai-des-apps.com"
 
 ```http
 HTTP/1.1 201 Created
-Date: Mon, 10 Jul 2017 09:31:05 GMT
-Content-Length: 28
+Date: Mon, 10 Jul 2017 11:13:40 GMT
+Content-Length: 40
 Content-Type: text/plain; charset=utf-8
 
-http://localhost:8080/0L3VWH
+http://localhost:8080/redirect?id=efghCb
 ```
 
 Décodage POST /decode
 ```bash
-curl -i http://localhost:8080/decode?id=0L3VWH"
+curl -i http://localhost:8080/decode?id=efghCb
 ```
 
 ```http
 HTTP/1.1 200 OK
-Date: Mon, 10 Jul 2017 09:37:46 GMT
-Content-Length: 18
+Date: Mon, 10 Jul 2017 11:14:16 GMT
+Content-Length: 29
 Content-Type: text/plain; charset=utf-8
 
 https://www.quai-des-apps.com
@@ -52,14 +52,14 @@ https://www.quai-des-apps.com
 
 Redirection POST /redirect
 ```bash
-curl -i http://localhost:8080/redirect?id=0L3VWH"
+curl -i http://localhost:8080/redirect?id=efghCb
 ```
 
 ```http
 HTTP/1.1 303 See Other
 Location: https://www.quai-des-apps.com
-Date: Mon, 10 Jul 2017 09:47:55 GMT
-Content-Length: 18
+Date: Mon, 10 Jul 2017 11:14:52 GMT
+Content-Length: 29
 Content-Type: text/plain; charset=utf-8
 
 https://www.quai-des-apps.com
