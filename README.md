@@ -73,5 +73,5 @@ Limites de la conception actuelle :
 
 Piste d'améliorations :
  - Stockage des données en base
- - Fichier de configuration pour spécifier le domaine + port d'écoute + longueur des clés
- - Timestamp associé à chaque url pour définir un délai de péremption (afin de nettoyer les tables)
+ - Fichier de configuration pour spécifier le domaine, port d'écoute, longueur des clés & emplacement des logs
+ - Timestamp associé à chaque url pour définir un délai de péremption (en vue d'un nettoyage)

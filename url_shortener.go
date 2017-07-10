@@ -133,25 +133,26 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var status int
-
 		dst, err := u.Decode(r.URL)
 		if err != nil {
 			u.onError(w, http.StatusNotFound, "Invalid", err)
 			return
 		}
 
-		// Gestion du type de requête
+		var status int
+		var body []byte
+
 		switch requestType {
 		case DECODE:
 			status = http.StatusOK
+			body = []byte(dst)
 		case REDIRECT:
 			status = http.StatusSeeOther
 			w.Header().Set("Location", dst)
 		}
 
 		w.WriteHeader(status)
-		w.Write([]byte(dst))
+		w.Write(body)
 	}
 }
 
@@ -171,12 +172,13 @@ func (u *UrlShortener) Init() http.Handler {
 	mux.HandleFunc("/decode", u.handle(DECODE))
 	mux.HandleFunc("/redirect", u.handle(REDIRECT))
 
+	log.Println("URL shortener starting ...")
+
 	return mux
 }
 
 func main() {
 
 	// Démarrage du serveur
-	log.Fatal(http.ListenAndServe(":8080",
-		new(UrlShortener).Init()))
+	log.Fatal(http.ListenAndServe(":8080", new(UrlShortener).Init()))
 }
