@@ -2,7 +2,7 @@
 
 Implémentation en Go d'une API Rest permettant la gestion d'un URL shortener.
 
-Temps d'implémentation : ~4h
+Temps de recherches, implémentation & documentation : ~8h
 
 ## Installation
 ```bash
@@ -22,7 +22,7 @@ go run url_shortener.go
 
 ## Exemples d'utilisation
 
-Encodage POST /encode
+Encodage :
 ```bash
 curl -i http://localhost:8080/encode --data "https://www.quai-des-apps.com"
 ```
@@ -36,7 +36,7 @@ Content-Type: text/plain; charset=utf-8
 http://localhost:8080/redirect?id=efghCb
 ```
 
-Décodage POST /decode
+Décodage :
 ```bash
 curl -i http://localhost:8080/decode?id=efghCb
 ```
@@ -50,7 +50,7 @@ Content-Type: text/plain; charset=utf-8
 https://www.quai-des-apps.com
 ```
 
-Redirection POST /redirect
+Redirection :
 ```bash
 curl -i http://localhost:8080/redirect?id=efghCb
 ```
