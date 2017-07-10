@@ -30,6 +30,18 @@ func TestUrlShortener(t *testing.T) {
 		server.URL+"/encode", "www.test.bzh",
 		"Invalid url parse www.test.bzh: invalid URI for request\n")
 
+	for _, path := range []string{"decode", "redirect"} {
+		urlError(t, http.StatusBadRequest,
+			server.URL+"/"+path+"", "",
+			"Invalid id ''\n")
+		urlError(t, http.StatusBadRequest,
+			server.URL+"/"+path+"?id=123", "",
+			"Invalid id '123'\n")
+		urlError(t, http.StatusNotFound,
+			server.URL+"/"+path+"?id=123456", "",
+			"Invalid id '123456' not found\n")
+	}
+
 	// Encodage
 	urlDst := urlOk(t, http.StatusCreated, server.URL+"/encode",
 		"http://www.test.bzh", false)

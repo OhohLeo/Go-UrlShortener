@@ -50,21 +50,21 @@ func (u *UrlShortener) handleEncode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Récupération vers l'url spécifiée dans le body
+	// Récupération de l'url longue spécifiée dans le body
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		u.onError(w, http.StatusBadRequest, "Invalid body", err)
 		return
 	}
 
-	// Validation de l'url
+	// Validation de l'url longue
 	rcvUrl, err := url.ParseRequestURI(string(body))
 	if err != nil {
 		u.onError(w, http.StatusBadRequest, "Invalid url", err)
 		return
 	}
 
-	// Génération de l'url
+	// Génération de l'url courte
 	dst := "http"
 	if r.TLS != nil {
 		dst += "s"
@@ -80,13 +80,12 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		dst, err := u.Decode(r.URL)
+		status, dst, err := u.Decode(r.URL)
 		if err != nil {
-			u.onError(w, http.StatusNotFound, "Invalid", err)
+			u.onError(w, status, "Invalid", err)
 			return
 		}
 
-		var status int
 		var body []byte
 
 		switch requestType {
@@ -138,7 +137,7 @@ func (u *UrlShortener) Encode(longUrl *url.URL) (shortUrl string) {
 }
 
 // Decode permet d'obtenir l'url originale à partir de l'url réduite
-func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
+func (u *UrlShortener) Decode(shortUrl *url.URL) (status int, longUrl string, err error) {
 
 	var ok bool
 
@@ -146,6 +145,7 @@ func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
 
 	// Validation de l'id
 	if CHECK_ID.MatchString(key) == false {
+		status = http.StatusBadRequest
 		err = fmt.Errorf("id '%s'", key)
 		return
 	}
@@ -153,6 +153,7 @@ func (u *UrlShortener) Decode(shortUrl *url.URL) (longUrl string, err error) {
 	// Récupération de l'adresse longue
 	longUrl, ok = u.urls[key]
 	if ok == false {
+		status = http.StatusNotFound
 		err = fmt.Errorf("id '%s' not found", key)
 		return
 	}
