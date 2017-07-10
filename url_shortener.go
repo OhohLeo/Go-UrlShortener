@@ -125,6 +125,7 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 		case ENCODE:
 			status = http.StatusCreated
 
+			// Génération de l'url
 			dst = "http"
 			if r.TLS != nil {
 				dst += "s"
@@ -135,7 +136,7 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 			status = http.StatusOK
 			dst, err = u.Decode(rcvUrl)
 		case REDIRECT:
-			status = http.StatusMovedPermanently
+			status = http.StatusSeeOther
 			dst, err = u.Decode(rcvUrl)
 		}
 
