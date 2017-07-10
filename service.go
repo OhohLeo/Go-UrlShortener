@@ -37,6 +37,7 @@ type ServiceRsp struct {
 	Registered    bool            `json:"registered"`
 }
 
+// Register permet l'enregistrement auprès du PLM
 func (s *Service) Register() (ip string, port int, err error) {
 
 	service, err := json.Marshal(s)
@@ -91,6 +92,7 @@ type UpdateRsp struct {
 	Hash   string `json:"hash"`
 }
 
+// Update permet l'envoi du status au PLM
 func (s *Service) Update(status int) error {
 
 	update := &Update{
