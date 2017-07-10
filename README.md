@@ -2,7 +2,10 @@
 
 Implémentation en Go d'une API Rest permettant la gestion d'un URL shortener.
 
-Temps de recherches, implémentation & documentation : ~8h
+L'option choisie est d'utiliser Esther-PLM pour paramétrer le port
+d'écoute de l'URL shortener.
+
+Temps de recherches, implémentation & documentation : ~10h
 
 ## Installation
 ```bash
@@ -17,7 +20,11 @@ ls bin
 
 ## Lancement du programme
 ```bash
-go run url_shortener.go
+go build
+./Go-UrlShortener -h
+./Go-UrlShortener
+./Go-UrlShortener -ip 127.0.0.1 -port 1234
+./Go-UrlShortener -plm http://localhost:9000 (option)
 ```
 
 ## Exemples d'utilisation
@@ -61,9 +68,8 @@ Location: https://www.quai-des-apps.com
 Date: Mon, 10 Jul 2017 11:14:52 GMT
 Content-Length: 29
 Content-Type: text/plain; charset=utf-8
-
-https://www.quai-des-apps.com
 ```
+
 ## Commentaires
 
 Limites de la conception actuelle :
@@ -75,3 +81,7 @@ Piste d'améliorations :
  - Stockage des données en base
  - Fichier de configuration pour spécifier le domaine, port d'écoute, longueur des clés & emplacement des logs
  - Timestamp associé à chaque url pour définir un délai de péremption (en vue d'un nettoyage)
+
+Fait en plus :
+ - Tests unitaires sur url_shortener.go
+ - Envoi d'une requête /status au PLM (non fonctionnel)
