@@ -120,6 +120,10 @@ func (s *Service) Update(status int) error {
 		return err
 	}
 
+	if rsp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected rsp status %d", rsp.Status)
+	}
+
 	defer rsp.Body.Close()
 
 	// Décodage de la réponse
