@@ -6,6 +6,7 @@ L'option choisie est d'utiliser Esther-PLM pour paramétrer le port
 d'écoute de l'URL shortener.
 
 Temps de recherches, implémentation & documentation : ~10h
+
 Testé sur RaspberryPi 2 (en utilisant bin/url_shortener_armhfv7)
 
 ## Installation
