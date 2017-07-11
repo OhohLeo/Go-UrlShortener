@@ -6,6 +6,7 @@ L'option choisie est d'utiliser Esther-PLM pour paramétrer le port
 d'écoute de l'URL shortener.
 
 Temps de recherches, implémentation & documentation : ~10h
+Testé sur RaspberryPi 2 (en utilisant bin/url_shortener_armhfv7)
 
 ## Installation
 ```bash
@@ -24,7 +25,12 @@ go build
 ./Go-UrlShortener -h
 ./Go-UrlShortener
 ./Go-UrlShortener -ip 127.0.0.1 -port 1234
-./Go-UrlShortener -plm http://localhost:9000 (option)
+```
+
+## Lancement du programme en utilisant PLM (option)
+```bash
+esther-plm -c config.json
+./Go-UrlShortener -plm http://localhost:9000
 ```
 
 ## Exemples d'utilisation
