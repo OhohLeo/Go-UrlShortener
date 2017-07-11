@@ -18,6 +18,9 @@ const (
 	KEY_LENGTH = 6
 )
 
+var LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+var CHECK_ID = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
+
 type UrlShortener struct {
 	urls map[string]string
 }
@@ -160,9 +163,6 @@ func (u *UrlShortener) Decode(shortUrl *url.URL) (status int, longUrl string, er
 
 	return
 }
-
-var LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-var CHECK_ID = regexp.MustCompile(`^[a-zA-Z0-9]{6}$`)
 
 // GetRandomKey retourne une clé aléatoire composé de 6 lettres
 func (u *UrlShortener) GetRandomKey() string {
