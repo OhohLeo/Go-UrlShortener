@@ -120,6 +120,8 @@ func (s *Service) Update(status int) error {
 		return err
 	}
 
+	defer rsp.Body.Close()
+
 	// Décodage de la réponse
 	var updateRsp UpdateRsp
 	err = json.NewDecoder(rsp.Body).Decode(&updateRsp)

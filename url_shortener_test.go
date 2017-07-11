@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -44,7 +45,7 @@ func TestUrlShortener(t *testing.T) {
 
 	// Encodage
 	urlDst := urlOk(t, http.StatusCreated, server.URL+"/encode",
-		"http://www.test.bzh", false)
+		"https://www.quai-des-apps.com", false)
 	if urlDst == nil {
 		t.Fail()
 		return
@@ -54,24 +55,41 @@ func TestUrlShortener(t *testing.T) {
 	id := urlDst.Query().Get("id")
 
 	// Décodage
-	longUrl := urlOk(t, http.StatusOK, server.URL+"/decode?id="+id, "", false)
-
-	assert.Equal(t, "http://www.test.bzh", longUrl.String())
-
-}
-
-func urlOk(t *testing.T, status int, dst string, data string, checkLocation bool) (redirect *url.URL) {
-
-	rsp, err := http.Post(dst, "", strings.NewReader(data))
-	if assert.Nil(t, err) == false {
+	longUrl := urlOk(t, http.StatusOK,
+		server.URL+"/decode?id="+id, "", false)
+	if longUrl == nil {
+		t.Fail()
 		return
 	}
 
-	assert.Equal(t, status, rsp.StatusCode)
+	assert.Equal(t, "https://www.quai-des-apps.com", longUrl.String())
+
+	// Redirection
+	longUrl = urlOk(t, http.StatusOK,
+		server.URL+"/redirect?id="+id, "", true)
+	if longUrl == nil {
+		t.Fail()
+		return
+	}
+
+	assert.Equal(t, "https://www.quai-des-apps.com", longUrl.String())
+}
+
+func urlOk(t *testing.T, status int, dst string, data string, isRedirect bool) (redirect *url.URL) {
+
+	rsp, err := http.Post(dst, "", strings.NewReader(data))
+	if assert.Nil(t, err) == false {
+		fmt.Println(err.Error())
+		return
+	}
+
+	if assert.Equal(t, status, rsp.StatusCode) == false {
+		return
+	}
 
 	var urlStr string
-	if checkLocation {
-		urlStr = rsp.Header.Get("Location")
+	if isRedirect {
+		urlStr = rsp.Request.URL.String()
 	} else {
 		body, err := ioutil.ReadAll(rsp.Body)
 		if assert.Nil(t, err, "no error on getting body") == false {

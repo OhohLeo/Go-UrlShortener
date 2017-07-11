@@ -22,7 +22,7 @@ type UrlShortener struct {
 	urls map[string]string
 }
 
-// Init procède à l'initalisation du random, du stockage des urls & du routage
+// Init initialise la fonctionnalité random, le stockage des urls et les routes
 func (u *UrlShortener) Init() http.Handler {
 
 	// Initialisation du random
