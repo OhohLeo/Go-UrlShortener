@@ -14,23 +14,24 @@ glide up
 ```
 ## Génération des binaires pour 386, amd64 & armhfv7
 ```bash
-chmod +x script.sh
-./script.sh
+chmod +x build.sh
+./build.sh
 ls bin
 ```
 
 ## Lancement du programme
 ```bash
+cd src/url_shortener
 go build
-./Go-UrlShortener -h
-./Go-UrlShortener
-./Go-UrlShortener -ip 127.0.0.1 -port 1234
+./url_shortener -h
+./url_shortener
+./url_shortener -ip 127.0.0.1 -port 1234
 ```
 
 ## Lancement du programme en utilisant PLM (option)
 ```bash
 esther-plm -c config.json
-./Go-UrlShortener -plm http://localhost:9000
+./url_shortener -plm http://localhost:9000
 ```
 
 ## Exemples d'utilisation
