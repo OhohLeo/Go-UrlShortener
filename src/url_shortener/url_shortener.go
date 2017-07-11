@@ -121,7 +121,7 @@ func (u *UrlShortener) handle(requestType int) func(http.ResponseWriter, *http.R
 	}
 }
 
-// onError est appelé en cas d'erreur et retourne une erreur de type HTTP BadRequest
+// onError est appelé en cas d'erreur et retourne une erreur du type spécifiée
 func (u *UrlShortener) onError(w http.ResponseWriter, status int, msg string, err error) {
 
 	if err != nil {
@@ -135,22 +135,22 @@ func (u *UrlShortener) onError(w http.ResponseWriter, status int, msg string, er
 	http.Error(w, msg, status)
 }
 
-// Encode permet d'obtenir l'url réduite
-func (u *UrlShortener) Encode(longUrl *url.URL) (shortUrl string) {
+// Encode permet d'obtenir la clé aléatoire de l'url réduite
+func (u *UrlShortener) Encode(longUrl *url.URL) (key string) {
 
 	// Génération d'une clé aléatoire
 	for {
-		shortUrl = u.GetRandomKey()
+		key = u.GetRandomKey()
 
-		// Vérification que la shortUrl n'est pas déjà utilisée
-		_, ok := u.urls[shortUrl]
+		// Vérification que la clé n'est pas déjà utilisée
+		_, ok := u.urls[key]
 		if ok == false {
 			break
 		}
 	}
 
 	// Stockage de la relation url courte => url longue
-	u.urls[shortUrl] = longUrl.String()
+	u.urls[key] = longUrl.String()
 
 	return
 }
