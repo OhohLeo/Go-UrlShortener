@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 SRC=./src/url_shortener/*.go
 DST=./bin/url_shortener_
